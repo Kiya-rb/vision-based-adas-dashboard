@@ -1,0 +1,29 @@
+# Vision-Based ADAS Dashboard — repository setup
+
+Dev-time noise
+==============
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+Model weights (ultralytics downloads yolov8n.pt automatically)
+==============================================================
+*.pt
+*.onnx
+*.engine
+
+LaTeX build by-products (report/main.tex and Resources/ are committed)
+=====================================================================
+report/*.aux
+report/*.log
+report/*.out
+report/*.toc
+report/*.synctex.gz
+
+Media originals — the committed files are already 720p
+======================================================
+media/*-original.mp4
+data/roads/*-original.mp4
+
+# report PDF is committed as Vision-Based-ADAS-Dashboard-report.pdf; a recompile produces main.pdf
+report/main.pdf

@@ -1,0 +1,72 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[margin=1.7cm]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage[hidelinks]{hyperref}
+\usepackage{parskip}
+\titleformat{\section}{\normalfont\large\bfseries}{\thesection}{0.6em}{}
+\titlespacing*{\section}{0pt}{6pt}{2pt}
+\setlist[itemize]{topsep=2pt,itemsep=1pt,parsep=0pt,leftmargin=1.3em}
+\pagestyle{empty}
+
+\begin{document}
+
+\begin{center}
+{\Large\bfseries Vision-Based ADAS Dashboard}\\[2pt]
+{\large Classical Computer Vision vs.\ Hybrid Deep Learning}\\[4pt]
+{\small Computer Vision course project \textendash{} M.Sc.\ Control Systems Engineering, University of Padova}\\
+{\small Author: Kiavash Rabbani Soudabi (ID 2141822) \textendash{} Supervisor: Prof.\ Pietro Zanuttigh \textendash{} A.Y.\ 2025--2026}
+\end{center}
+
+\section*{Purpose}
+Build a working driver-assistance (ADAS) pipeline that processes real dash-cam footage and renders an operator
+dashboard on top of it, covering four tasks: \textbf{lane detection} (drivable road boundaries),
+\textbf{lane classification} (solid vs.\ dashed), \textbf{Forward Collision Warning} (vehicle proximity) and
+\textbf{Lane Departure Warning} (lateral drift of the host vehicle).
+
+The design question behind the project: learned end-to-end models dominate lane extraction in production ADAS, but
+relying on them as a black box skips the fundamentals. The solution chosen is a \textbf{hybrid architecture} --
+YOLO performs object detection, where deep learning genuinely excels, while the whole lane-extraction stack (colour
+filtering, edge gradients, geometric clustering, temporal tracking) is implemented from classical computer-vision
+primitives.
+
+\section*{Pipeline}
+\begin{itemize}
+  \item \textbf{Illumination normalisation:} CLAHE on the L channel in LAB space corrects harsh shadows before
+        thresholding.
+  \item \textbf{Feature masking:} adaptive HLS colour masks (white and yellow) fused with directional edge
+        gradients; Sobel was preferred over Canny because lane edges have a known orientation.
+  \item \textbf{ROI and vehicle blackout:} a parameterised triangular region of interest, with detected vehicles
+        removed so their edges cannot contaminate the lane fit.
+  \item \textbf{Geometric lane extraction:} Hough transform, each line reduced to a compact 2-D feature vector.
+  \item \textbf{Classification and tracking:} DBSCAN clustering over the feature space plus a \emph{Paint-Fill
+        Ratio} (above 85\,\% $\Rightarrow$ solid) to classify the marking, with temporal memory to suppress flicker.
+  \item \textbf{ADAS HUD:} drivable-area polygon with asphalt validation, vehicle lane assignment
+        (main lane / adjacent lane / out of bounds), forward-collision and lane-departure alerts.
+\end{itemize}
+
+\section*{Tools}
+Python, OpenCV, NumPy, scikit-learn (DBSCAN, StandardScaler), Ultralytics YOLOv8n for object detection,
+Matplotlib, Jupyter, LaTeX for the report.
+
+\section*{Results and limitations}
+The pipeline reaches an estimated \textbf{$\approx$\,75\,\% reliability} under reasonable road conditions: the lane
+overlay and the alerts behave correctly on the majority of frames, and solid/dashed classification and vehicle lane
+assignment are stable across the test scenes. Two limitations are documented explicitly: \textbf{speed} -- YOLOv8n
+inference plus the classical chain in Python is a real bottleneck for deployment -- and \textbf{curvature}: the linear
+lane model ($y = mx + b$) degrades on sharp bends, where a polynomial fit is needed. Working through feature
+extraction, clustering and temporal tracking from scratch made concrete what learned representations replace.
+
+\section*{Repository contents}
+\texttt{notebook/FinalProject.ipynb} (executed project notebook) $\cdot$ \texttt{src/project.py} (documented pipeline
+module) $\cdot$ \texttt{report/} (LaTeX source, figures, compiled report PDF) $\cdot$ \texttt{data/roads/} (test
+images and 720p test video) $\cdot$ \texttt{media/} (720p dashboard demo) $\cdot$ \texttt{results/} and
+\texttt{docs/} (result figures and this overview).
+
+\section*{Skills demonstrated}
+Computer vision fundamentals (colour spaces, CLAHE, thresholding, Sobel/Hough geometry); clustering-based model
+fitting (DBSCAN); temporal filtering and object tracking; deep-learning object detection (YOLOv8) integrated with a
+classical pipeline; ADAS reasoning (drivable area, forward-collision and lane-departure warnings); scientific
+reporting in LaTeX.
+
+\end{document}
